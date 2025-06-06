@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Max Calculator" />
+
+  <title>Max Calculator</title>
+
+     <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="apple-touch-icon" href="icon.png" />
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+
+  
+  <style>
+    :root {
+      --bg-color: #100086;
+      --card-color: #00013e;
+      --text-color: #fff;
+      --accent-color: #ff5100;
+      --input-bg: #29008a;
+      --border-color: #2b00a2;
+    }
+
+    body.dark {
+      --bg-color: #000000;
+      --card-color: #282828;
+      --text-color: #ffffff;
+      --accent-color: #ff5100;
+      --input-bg: #000000;
+      --border-color: #373737;
+    }
+
+    body.light {
+      --bg-color: #fdf6e3;
+      --card-color: #ffffff;
+      --text-color: #333333;
+      --accent-color: #ff6600;
+      --input-bg: #ffffff;
+      --border-color: #dddddd;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Consolas, sans-serif;
+      margin: 0;
+      padding: 2em;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2em;
+      justify-content: center;
+    }
+
+    select.theme-selector {
+      position: fixed;
+      top: 1em;
+      right: 1em;
+      background: var(--card-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 0.5em;
+      border-radius: 5px;
+      z-index: 999;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1em;
+      margin-bottom: 2em;
+    }
+
+    /* Logo styling */
+    .logo {
+      width: 60px;
+      height: auto;
+      fill: var(--accent-color);
+      stroke: var(--accent-color);
+      filter: drop-shadow(0 0 2px #000000cc);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-weight: bold;
+      font-size: 2rem;
+      color: var(--accent-color);
+    }
+
+    .calculator,
+    .table-generator {
+      background-color: var(--card-color);
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+      flex: 1 1 320px;
+      min-width: 300px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--accent-color);
+    }
+
+    label {
+      display: block;
+      margin-top: 1em;
+      font-weight: bold;
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 0.8em;
+      margin-top: 0.5em;
+      margin-bottom: 1em;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    input {
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    /* Buttons container */
+    .button-group {
+      display: flex;
+      gap: 1em;
+      flex-wrap: nowrap;
+    }
+
+    /* Calculate button - main */
+    .button-group button:first-child {
+      flex: 2;
+      background-color: var(--accent-color);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    .button-group button:first-child:hover {
+      background-color: #d31c00;
+    }
+
+    /* Reset button - smaller, muted */
+    .button-group button:last-child {
+      flex: 1;
+      background-color: #0087b8;
+      color: #ddd;
+      font-weight: normal;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      padding: 0.6em;
+    }
+
+    .button-group button:last-child:hover {
+      background-color: #00678d;
+    }
+
+    .result {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #e0e0e0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+
+    th,
+    td {
+      padding: 0.6em;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    td {
+      color: var(--text-color);
+    }
+    
+    #schemaTable td:last-child {
+      text-align: right;
+    }
+
+  </style>
+</head>
+<body>
+<header>
+  <!-- New SVG pictogram -->
+  <svg class="logo" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-label="Hammer Thrower Logo" role="img">
+    <ellipse cx="145" cy="263" fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" rx="140" ry="20"/>
+    <circle cx="216" cy="84" r="23" fill="white"/>
+    <path d="M100 115.3c30.9-12.5 27.5-38.7 4.5-28.9-14.2 8.7-28.3 21.6-45.1 24-5 1-20.5 1.5-26.4 0-5.6-1-12.7-2.8-8.2 2.3 3.3 3.2 15 7.3 22 8.5 
+            17.3 4.2 30.5 3.9 45.4-2.7 2.6-1.1 5.2-2.2 7.8-3.2zm23.8 78.9v3.5c0 8.5 2.1 14.9 6.2 20.5 7.9 10.1 21.1 22.9 31.1 30.8 3.2 2.6 5.6 4.1 
+            8.5 5.9 2.9 1.2 8.2 3.2 9.1 3.2h.3l-.3-.6c-4.9-5.8-10.4-12.5-15.2-18.8-13.2-17.9-19-30.8-17-38.7.6-1.8 7.6-16.7 7.6-16.7l2.1-3.5c8.9-14.1 
+            11.1-18.3 9.1-31.1-1.2-4.7-2.3-6.7-5.6-8.2-1.2-.6-1.5-.6-1.8-2.1-8.4-21.4-38.1 11.4-46.9 23.4-6.7 8.8-11.4 17.9-14.9 27.8-1.2 4.4-3.2 
+            11.4-3.8 14.4l-2.1 10.8c-.5 5.3-2 18.4-2.1 24-.3.6-.3 2.9-.6 4.7 0 1.8 0 3.8-.3 4.4.2 3.6-.9 13 .3 16.1l.3.3v-.3c.3-.3.9-2.3 1.5-4.7.9-2.3 
+            2.1-6.2 2.6-8.5.9-2.3 2.6-7.6 3.8-12 3.8-12 9.1-25.2 14.1-35.2l10-16.4c2.1-3.1 3.8-5 6.7-7.9v.6c-.3.9-1.5 5.6-1.8 7.9l-.9 
+            6.4zM233.4 79.7c-2.1-6.7-7.3-12.3-13.8-13.8-5.3-1.5-10.8-.3-14.6 2.6l-1.5 1.2-1.8-.9c-6.4-4.1-14.4-7-21.1-8.2-3.2-.6-5-.6-16.4-.6-12.6 
+            0-13.2 0-16.1.6-6.2 1.2-9.7 2.9-12.9 5.9-3.8 4.1-5 7.9-3.2 11.4 1.5 2.9 3.8 4.4 8.8 5.6 2.3.6 2.6.6 6.2.3 2.1-.3 6.2-.9 8.8-1.2 18.2-3.2 
+            21.7-3.8 29-3.5 3.8.3 9.7 1.2 12.3 2.1h.6v3.2c.3 5.6 2.6 10.3 6.4 13.8 1.8 1.8 5.3 3.5 7.9 4.1 2.3.9 7 .6 9.4 0 4.1-1.2 8.2-4.7 10.3-8.2 
+            2-3.9 2.6-10 1.7-14.4zm-9.9 15.2c-1.2 1.2-3.5 2.1-5.6 2.3-.9.3-1.8.3-2.1.3-2.6-.3-6.4-2.1-8.5-3.8-2.3-2.3-3.8-5.6-4.1-9.1l-.3-1.5h.3c.3 0 
+            1.5.3 2.9.9 2.1 1.2 2.1 1.2 2.6 2.3.3.9.9 2.1 1.5 2.6 1.8 2.6 5.9 3.8 8.5 2.6 1.2-.6 1.2-.6 3.2 1.2l2.1 1.5-.5.7zm-6.8-5.6h-.9c-.3 
+            0-1.2-.3-1.5-.3-.9-.3-2.3-1.8-2.3-2.1v-.3l2.3 1.2c1.2.7 2.4 1.2 2.4 1.5zm-.3-10.5v-.3l.9.3c1.2.3 2.3 1.2 2.9 2.3.3.3.6.9.6 
+            1.2l-.3.3-.9-1.2c-.9-.6-1.8-1.5-2.3-1.8-.6-.5-.9-.8-.9-.8zm11.5 9.9-.3.9h-.3l-1.8-1.8c-1.8-2.1-1.8-2.1-1.8-3.8 
+            0-.9-.3-2.3-.6-3.2-.6-1.8-2.9-4.1-4.7-4.7-1.5-.3-3.5-.3-4.4 0s-1.2 0-3.2-1.5c-1.2-.9-2.3-1.8-2.3-1.8 0-.6 2.1-1.5 3.8-1.8 4.4-1.5 9.1 0 
+            12.3 3.5 1.8 2.1 3.2 4.7 3.5 7.3.3 2 .3 5.5-.2 6.9z"/>
+    <circle cx="104.6" cy="57.8" r="22"/>
+
+  </svg>
+  <h1>Max Calculator</h1>
+</header>
+
+  <select class="theme-selector" onchange="changeTheme(this.value)">
+    <option value="default">🥏 Lycurgus</option>
+    <option value="light">🌞 Licht</option>
+    <option value="dark">🌙 Donker</option>
+  </select>
+
+  <!-- 1RM Calculator -->
+  <div class="calculator">
+    <h2>Max Calculator</h2>
+    <label for="weight">Gewicht (kg):</label>
+    <input type="number" id="weight" placeholder="Bijvoorbeeld 80" />
+
+    <label for="reps">Herhalingen (reps):</label>
+    <input type="number" id="reps" placeholder="Kies een nummer van 2 tot 15" />
+
+    <div class="button-group">
+      <button onclick="calculate()">Bereken 1RM</button>
+      <button onclick="resetCalculator()">Reset</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- Gewichtstabel op basis van 1RM -->
+  <div class="table-generator">
+    <h2>Trainingsgewichten</h2>
+    <label for="oneRMinput">Voer je 1RM in (kg):</label>
+    <input type="number" id="oneRMinput" placeholder="Bijvoorbeeld 100" />
+
+    <div class="button-group">
+      <button onclick="generateTable()">Toon tabel</button>
+      <button onclick="resetTable()">Reset</button>
+    </div>
+
+    <div id="tableContainer"></div>
+  </div>
+
+  <div class="table-generator">
+  <h2>Krachtschema</h2>
+  <button onclick="toggleSchema()">📋 Open Schema</button>
+  <div id="schemaTable" style="display:none; margin-top: 1em;">
+    <table>
+      <thead>
+        <tr><th>Blok</th><th>Schema</th></tr>
+      </thead>
+      <tbody id="schemaRows">
+        <tr><td rowspan="6">Blok 1</td><td>5 x 15</td></tr>
+        <tr><td>4 x 15</td></tr>
+        <tr><td>3 x 15</td></tr>
+        <tr><td>15 - 12 - 10 - 12 - 15</td></tr>
+        <tr><td>15 - 12 - 12 - 15</td></tr>
+        <tr><td>15 - 12 - 15</td></tr>
+
+        <tr><td rowspan="7">Blok 2</td><td>5 x 12</td></tr>
+        <tr><td>4 x 12</td></tr>
+        <tr><td>3 x 12</td></tr>
+        <tr><td>12 - 10 - 8 - 10 - 12</td></tr>
+        <tr><td>12 - 10 - 10 - 12</td></tr>
+        <tr><td>12 - 10 - 12</td></tr>
+        <tr><td><strong>Testen max reps</strong></td></tr>
+
+        <tr><td rowspan="6">Blok 3</td><td>5 x 10</td></tr>
+        <tr><td>4 x 10</td></tr>
+        <tr><td>3 x 10</td></tr>
+        <tr><td>10 - 8 - 6 - 8 - 10</td></tr>
+        <tr><td>10 - 8 - 8 - 10</td></tr>
+        <tr><td>10 - 8 - 10</td></tr>
+
+        <tr><td rowspan="6">Blok 4</td><td>5 x 8</td></tr>
+        <tr><td>4 x 8</td></tr>
+        <tr><td>3 x 8</td></tr>
+        <tr><td>8 - 6 - 5 - 6 - 8</td></tr>
+        <tr><td>8 - 6 - 6 - 8</td></tr>
+        <tr><td>8 - 6 - 8</td></tr>
+
+        <tr><td rowspan="6">Blok 5</td><td>5 x 6</td></tr>
+        <tr><td>4 x 6</td></tr>
+        <tr><td>3 x 6</td></tr>
+        <tr><td>6 - 5 - 3 - 5 - 6</td></tr>
+        <tr><td>6 - 5 - 5 - 6</td></tr>
+        <tr><td>6 - 5 - 6</td></tr>
+
+        <tr><td rowspan="6">Blok 6</td><td>5 x 5</td></tr>
+        <tr><td>4 x 5</td></tr>
+        <tr><td>3 x 5</td></tr>
+        <tr><td>5 - 3 - 2 - 3 - 5</td></tr>
+        <tr><td>5 - 3 - 3 - 5</td></tr>
+        <tr><td>5 - 3 - 5</td></tr>
+
+        <tr><td rowspan="4">Blok 7</td><td>5 x 3</td></tr>
+        <tr><td>4 x 3</td></tr>
+        <tr><td>3 x 3</td></tr>
+        <tr><td><strong>Testen max gewicht</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+  <script>
+    function applyTheme(theme) {
+      document.body.classList.remove("light", "dark");
+      if (theme === "light") document.body.classList.add("light");
+      else if (theme === "dark") document.body.classList.add("dark");
+      // default is geen extra class (Lycurgus)
+    }
+
+    function changeTheme(theme) {
+      localStorage.setItem("selectedTheme", theme);
+      applyTheme(theme);
+    }
+
+    // Toepassen bij laden
+    const storedTheme = localStorage.getItem("selectedTheme") || "default";
+    document.querySelector(".theme-selector").value = storedTheme;
+    applyTheme(storedTheme);
+  </script>
+
+  <script>
+    function toggleSchema() {
+      const table = document.getElementById('schemaTable');
+      table.style.display = table.style.display === 'none' ? 'block' : 'none';
+    }
+  </script>
+
+
+  <script>
+    const multipliers = {
+      2: 0.95,
+      3: 0.9,
+      4: 0.875,
+      5: 0.85,
+      6: 0.8,
+      7: 0.775,
+      8: 0.75,
+      9: 0.725,
+      10: 0.7,
+      11: 0.675,
+      12: 0.65,
+      13: 0.63,
+      14: 0.62,
+      15: 0.6,
+    };
+
+    function calculate() {
+      const weight = parseFloat(document.getElementById('weight').value);
+      const reps = parseInt(document.getElementById('reps').value);
+      const resultDiv = document.getElementById('result');
+
+      if (!weight || !reps) {
+        resultDiv.textContent = 'Voer zowel gewicht als herhalingen in.';
+        return;
+      }
+
+      const multiplier = multipliers[reps];
+      if (!multiplier) {
+        resultDiv.textContent = `Geen formule beschikbaar voor ${reps} herhalingen.`;
+        return;
+      }
+
+      const oneRepMax = weight / multiplier;
+      resultDiv.textContent = `Geschatte 1RM: ${oneRepMax.toFixed(1)} kg`;
+
+      // Autofill 1RM in de tweede sectie
+      document.getElementById('oneRMinput').value = oneRepMax.toFixed(1);
+      generateTable();
+    }
+
+    function generateTable() {
+        const oneRM = parseFloat(document.getElementById('oneRMinput').value);
+        const container = document.getElementById('tableContainer');
+
+        if (!oneRM) {
+          container.innerHTML = '<p>Voer een geldige 1RM in.</p>';
+          return;
+        }
+
+        let html = `<table><tr><th>Reps</th><th>Gewicht (kg)</th><th>% van 1RM</th></tr>`;
+        for (let reps = 2; reps <= 15; reps++) {
+          const multiplier = multipliers[reps];
+          if (multiplier) {
+            const weight = oneRM * multiplier;
+            const percentage = multiplier * 100;
+            html += `<tr>
+              <td>${reps}</td>
+              <td>${weight.toFixed(1)}</td>
+              <td>${percentage.toFixed(0)}%</td>
+            </tr>`;
+          }
+        }
+        html += `</table>`;
+        container.innerHTML = html;
+      }
+
+
+    function resetCalculator() {
+      document.getElementById('weight').value = '';
+      document.getElementById('reps').value = '';
+      document.getElementById('result').textContent = '';
+      document.getElementById('oneRMinput').value = '';
+      document.getElementById('tableContainer').innerHTML = '';
+    }
+
+    function resetTable() {
+      document.getElementById('oneRMinput').value = '';
+      document.getElementById('tableContainer').innerHTML = '';
+    }
+
+    function toggleSchema() {
+      const table = document.getElementById('schemaTable');
+      table.style.display = table.style.display === 'none' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
