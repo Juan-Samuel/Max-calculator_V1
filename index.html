@@ -12,7 +12,7 @@
      <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#000000" />
-  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
 
   <!-- Service Worker -->
   <script>
@@ -138,16 +138,8 @@
       color: var(--text-color);
       border: 1px solid var(--border-color);
     }
-
-    /* Buttons container */
-    .button-group {
-      display: flex;
-      gap: 1em;
-      flex-wrap: nowrap;
-    }
-
-    /* Calculate button - main */
-    .button-group button:first-child {
+    /* Orange button (default main) */
+    .btn-orange {
       flex: 2;
       background-color: var(--accent-color);
       color: #fff;
@@ -157,26 +149,47 @@
       user-select: none;
     }
 
-    .button-group button:first-child:hover {
+    .btn-orange:hover {
       background-color: #d31c00;
     }
 
-    /* Reset button - smaller, muted */
-    .button-group button:last-child {
+    /* Blue button (Reset) */
+    .btn-blue {
       flex: 1;
       background-color: #0087b8;
-      color: #ddd;
-      font-weight: normal;
-      font-size: 0.9em;
+      color: #fff;
+      font-weight: bold;
       cursor: pointer;
       transition: background-color 0.3s ease;
       user-select: none;
-      padding: 0.6em;
     }
 
-    .button-group button:last-child:hover {
+    .btn-blue:hover {
       background-color: #00678d;
     }
+
+    /* Green button (Omzetten naar Schema) */
+    .btn-green {
+      flex: 1;
+      background-color: #2aa700;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    .btn-green:hover {
+      background-color: #1e7e00;
+    }
+    /* Buttons container */
+    .button-group {
+      display: flex;
+      gap: 1em;
+      flex-wrap: nowrap;
+    }
+
+
 
     .result {
       font-size: 1.3em;
@@ -206,7 +219,7 @@
       color: var(--text-color);
     }
     
-    #schemaTable td:last-child {
+    #schemaTable td {
       text-align: right;
     }
 
@@ -255,8 +268,8 @@
     <input type="number" id="reps" placeholder="Kies een nummer van 2 tot 15" />
 
     <div class="button-group">
-      <button onclick="calculate()">Bereken 1RM</button>
-      <button onclick="resetCalculator()">Reset</button>
+      <button class="btn-orange" onclick="calculate()">Bereken 1RM</button>
+      <button class="btn-blue" onclick="resetCalculator()">Reset</button>
     </div>
 
     <div class="result" id="result"></div>
@@ -268,10 +281,11 @@
     <label for="oneRMinput">Voer je 1RM in (kg):</label>
     <input type="number" id="oneRMinput" placeholder="Bijvoorbeeld 100" />
 
-    <div class="button-group">
-      <button onclick="generateTable()">Toon tabel</button>
-      <button onclick="resetTable()">Reset</button>
-    </div>
+  <div class="button-group">
+    <button class="btn-orange" onclick="generateTable()">Toon tabel</button>
+    <button class="btn-blue" onclick="resetTable()">Reset</button>
+    <button class="btn-green" onclick="applyToSchema()">Omzetten naar Krachtschema</button>
+  </div>
 
     <div id="tableContainer"></div>
   </div>
@@ -282,17 +296,17 @@
   <div id="schemaTable" style="display:none; margin-top: 1em;">
     <table>
       <thead>
-        <tr><th>Blok</th><th>Schema</th></tr>
+        <th>Schema</th><th>Gewicht (kg)</th></tr>
       </thead>
       <tbody id="schemaRows">
-        <tr><td rowspan="6">Blok 1</td><td>5 x 15</td></tr>
+        <tr><td>5 x 15</td></tr>
         <tr><td>4 x 15</td></tr>
         <tr><td>3 x 15</td></tr>
         <tr><td>15 - 12 - 10 - 12 - 15</td></tr>
         <tr><td>15 - 12 - 12 - 15</td></tr>
         <tr><td>15 - 12 - 15</td></tr>
 
-        <tr><td rowspan="7">Blok 2</td><td>5 x 12</td></tr>
+        <tr><td>5 x 12</td></tr>
         <tr><td>4 x 12</td></tr>
         <tr><td>3 x 12</td></tr>
         <tr><td>12 - 10 - 8 - 10 - 12</td></tr>
@@ -300,35 +314,35 @@
         <tr><td>12 - 10 - 12</td></tr>
         <tr><td><strong>Testen max reps</strong></td></tr>
 
-        <tr><td rowspan="6">Blok 3</td><td>5 x 10</td></tr>
+        <tr><td>5 x 10</td></tr>
         <tr><td>4 x 10</td></tr>
         <tr><td>3 x 10</td></tr>
         <tr><td>10 - 8 - 6 - 8 - 10</td></tr>
         <tr><td>10 - 8 - 8 - 10</td></tr>
         <tr><td>10 - 8 - 10</td></tr>
 
-        <tr><td rowspan="6">Blok 4</td><td>5 x 8</td></tr>
+        <tr><td>5 x 8</td></tr>
         <tr><td>4 x 8</td></tr>
         <tr><td>3 x 8</td></tr>
         <tr><td>8 - 6 - 5 - 6 - 8</td></tr>
         <tr><td>8 - 6 - 6 - 8</td></tr>
         <tr><td>8 - 6 - 8</td></tr>
 
-        <tr><td rowspan="6">Blok 5</td><td>5 x 6</td></tr>
+        <tr><td>5 x 6</td></tr>
         <tr><td>4 x 6</td></tr>
         <tr><td>3 x 6</td></tr>
         <tr><td>6 - 5 - 3 - 5 - 6</td></tr>
         <tr><td>6 - 5 - 5 - 6</td></tr>
         <tr><td>6 - 5 - 6</td></tr>
 
-        <tr><td rowspan="6">Blok 6</td><td>5 x 5</td></tr>
+        <tr><td>5 x 5</td></tr>
         <tr><td>4 x 5</td></tr>
         <tr><td>3 x 5</td></tr>
         <tr><td>5 - 3 - 2 - 3 - 5</td></tr>
         <tr><td>5 - 3 - 3 - 5</td></tr>
         <tr><td>5 - 3 - 5</td></tr>
 
-        <tr><td rowspan="4">Blok 7</td><td>5 x 3</td></tr>
+        <tr><td>5 x 3</td></tr>
         <tr><td>4 x 3</td></tr>
         <tr><td>3 x 3</td></tr>
         <tr><td><strong>Testen max gewicht</strong></td></tr>
@@ -439,17 +453,111 @@
       document.getElementById('result').textContent = '';
       document.getElementById('oneRMinput').value = '';
       document.getElementById('tableContainer').innerHTML = '';
+
+      clearSchemaWeights();
     }
 
     function resetTable() {
       document.getElementById('oneRMinput').value = '';
       document.getElementById('tableContainer').innerHTML = '';
-    }
 
+      clearSchemaWeights();
+    }
     function toggleSchema() {
       const table = document.getElementById('schemaTable');
       table.style.display = table.style.display === 'none' ? 'block' : 'none';
     }
+
+    function parseSchemaToReps(schemaText) {
+  const s = schemaText.replace(/\s+/g, ' ').trim();
+
+  // Case 1: "sets x reps" (supports 'x' and '×')
+  const xr = s.match(/(\d+)\s*[x×]\s*(\d+)/i);
+  if (xr) {
+    // reps is the number AFTER the x
+    return [parseInt(xr[2], 10)];
+  }
+
+  // Case 2: mixed reps "15 - 12 - 10 - 12 - 15" (or similar)
+  const nums = s.match(/\d+/g);
+  if (nums && nums.length) {
+    return nums.map(n => parseInt(n, 10));
+  }
+
+  // No numeric reps found (e.g., "Testen max ...")
+  return [];
+}
+
+function getSchemaCell(row) {
+  return row.cells[0]; // Only two columns now: Schema (0), Gewicht (1)
+}
+
+function formatWeights(weights) {
+  const vals = weights.filter(v => v != null);
+  if (!vals.length) return "";
+  return vals.map(w => w.toFixed(1)).join(" - ") + " kg";
+}
+
+function applyToSchema() {
+  const oneRM = parseFloat(document.getElementById('oneRMinput').value);
+  if (!oneRM) {
+    alert("Voer eerst een geldige 1RM in.");
+    return;
+  }
+
+  // Ensure header has the 3rd column (do this once)
+  const headerRow = document.querySelector('#schemaTable thead tr');
+  if (headerRow.cells.length < 2) {
+    const th = document.createElement('th');
+    th.textContent = 'Gewicht (kg)';
+    headerRow.appendChild(th);
+  }
+
+  // Fill/update every row
+  const rows = document.querySelectorAll('#schemaRows tr');
+  rows.forEach(row => {
+    const schemaCell = getSchemaCell(row);
+    if (!schemaCell) return;
+
+    const schemaText = schemaCell.textContent || '';
+    const repsList = parseSchemaToReps(schemaText);
+
+    const weightValues = repsList.map(rep => {
+      const m = multipliers[rep];
+      return m ? (oneRM * m) : null;
+    });
+
+    const weightText = formatWeights(weightValues);
+
+    // Gewicht column is always the cell right after the Schema cell
+    const weightIndex = schemaCell.cellIndex + 1;
+    if (row.cells.length <= weightIndex) {
+      // First time: create the cell
+      const cell = row.insertCell(weightIndex);
+      cell.textContent = weightText;
+    } else {
+      // Next times: just update it
+      row.cells[weightIndex].textContent = weightText;
+    }
+  });
+
+  document.getElementById('schemaTable').style.display = 'block';
+}
+
+
+function clearSchemaWeights() {
+  const rows = document.querySelectorAll('#schemaRows tr');
+  rows.forEach(row => {
+    const schemaCell = getSchemaCell(row);
+    if (!schemaCell) return;
+
+    const weightIndex = schemaCell.cellIndex + 1;
+    if (row.cells.length > weightIndex) {
+      row.cells[weightIndex].textContent = "";
+    }
+  });
+}
+
   </script>
 </body>
 </html>
