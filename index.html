@@ -293,6 +293,7 @@
   <div class="table-generator">
   <h2>Krachtschema</h2>
   <button onclick="toggleSchema()">📋 Open Schema</button>
+  <button class="btn-blue" onclick="saveTableAsImage('schemaTable')">📷 Save Schema</button>
   <div id="schemaTable" style="display:none; margin-top: 1em;">
     <table>
       <thead>
@@ -377,6 +378,19 @@
     }
   </script>
 
+  <script>
+  function saveTableAsImage(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    html2canvas(element, { backgroundColor: null }).then(canvas => {
+      const link = document.createElement("a");
+      link.download = elementId + ".png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }
+  </script>
 
   <script>
     const multipliers = {
@@ -559,5 +573,8 @@ function clearSchemaWeights() {
 }
 
   </script>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 </body>
 </html>
